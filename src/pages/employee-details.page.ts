@@ -5,7 +5,7 @@ export class EmployeeDetailsPage {
 
   async openAddEmployee() {
     await this.page.getByRole('link', { name: 'PIM' }).click();
-    await this.page.getByRole('button', { name: 'Add' }).click();
+    await this.page.getByRole('link', { name: 'Add Employee', exact: true }).click();
 
     await expect(
       this.page.getByRole('heading', { name: 'Add Employee' })
@@ -30,13 +30,13 @@ export class EmployeeDetailsPage {
     await idField.fill(employeeId);
     await this.page.getByRole('button', { name: 'Save' }).click();
 
-    await expect(
-      this.page.getByRole('heading', { name: 'Personal Details' })
-    ).toBeVisible();
+    await expect(this.page).toHaveURL(
+      /\/pim\/viewPersonalDetails\/empNumber\/\d+/
+    );
   }
 
   async openEmployeeJobDetails() {
-    await this.page.getByRole('tab', { name: 'Job' }).click();
+    await this.page.getByRole('link', { name: 'Job', exact: true }).click();
 
     await expect(
       this.page.getByText('Job Details', { exact: true }).last()
@@ -49,9 +49,6 @@ export class EmployeeDetailsPage {
   ) {
     await this.openEmployeeJobDetails();
 
-    // Enable editing in the Job Details section
-    await this.page.locator('.orangehrm-edit-employee').getByRole('button').click();
-
     // Select the Job Title using OrangeHRM's custom dropdown
     const jobTitleField = this.page
       .locator('.oxd-input-group')
@@ -59,7 +56,7 @@ export class EmployeeDetailsPage {
       .locator('.oxd-select-text');
 
     await jobTitleField.click();
-    await this.page.getByRole('option', { name: jobTitle }).click();
+    await this.page.getByRole('option', { name: jobTitle, exact: true }).click();
 
     // Select the Employment Status
     const employmentStatusField = this.page
@@ -68,7 +65,9 @@ export class EmployeeDetailsPage {
       .locator('.oxd-select-text');
 
     await employmentStatusField.click();
-    await this.page.getByRole('option', { name: employmentStatus }).click();
+    await this.page
+      .getByRole('option', { name: employmentStatus, exact: true })
+      .click();
 
     // Save the changes
     await this.page.getByRole('button', { name: 'Save' }).last().click();

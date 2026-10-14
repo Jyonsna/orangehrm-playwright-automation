@@ -1,5 +1,5 @@
 
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 export class LoginPage {
   constructor(private readonly page: Page) {}
@@ -20,5 +20,7 @@ export class LoginPage {
     await this.page
       .getByRole('button', { name: 'Login' })
       .click();
+
+    await expect(this.page).toHaveURL(/\/dashboard\/index/);
   }
 }

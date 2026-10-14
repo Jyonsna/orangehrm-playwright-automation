@@ -3,6 +3,8 @@ import { LoginPage } from '../src/pages/login.page';
 import { EmployeeDetailsPage } from '../src/pages/employee-details.page';
 import employee from '../test-data/employee.json';
 
+const testEmployeeId = `QA${Date.now().toString().slice(-6)}`;
+
 test('Create an employee using JSON test data', async ({ page }) => {
   const loginPage = new LoginPage(page);
   const employeePage = new EmployeeDetailsPage(page);
@@ -16,12 +18,8 @@ test('Create an employee using JSON test data', async ({ page }) => {
     employee.firstName,
     employee.middleName,
     employee.lastName,
-    employee.employeeId
+    testEmployeeId
   );
-
-  await expect(
-    page.getByRole('heading', { name: 'Personal Details' })
-  ).toBeVisible();
 });
 
 test('Edit Job Title and Employment Status for the existing employee', async ({ page }) => {
@@ -44,19 +42,21 @@ const employeeIdField = page
   .filter({ hasText: 'Employee Id' })
   .locator('input');
 
-await employeeIdField.fill(employee.employeeId);
+await employeeIdField.fill(testEmployeeId);
 await page.getByRole('button', { name: 'Search' }).click();
 
-// Wait for OrangeHRM to update the results
-await expect(page.getByText('No Records Found', { exact: true }))
-  .toBeHidden({ timeout: 10000 }).catch(() => {});
-
-// Print the table contents for debugging
-console.log(
-  'Search results:',
-  await page.locator('.oxd-table-body').innerText()
-);
+const employeeRow = page
+  .getByRole('row')
+  .filter({
+    has: page.getByRole('cell', { name: testEmployeeId, exact: true }),
+  });
+await expect(employeeRow).toHaveCount(1);
+await employeeRow.locator('button:has(i.bi-pencil-fill)').click();
+await expect(page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\/\d+/);
 
   // Update Job Title and Employment Status
-  await employeePage.editJobDetails('QA Engineer', 'Full-Time');
+  await employeePage.editJobDetails(
+    employee.jobTitle,
+    employee.employmentStatus
+  );
 });
